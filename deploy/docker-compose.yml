@@ -1,0 +1,41 @@
+version: '3.8'
+
+volumes:
+  pgdata:
+  static:
+  media:
+  nginx_conf:
+
+services:
+  db:
+    image: postgres:alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  web:
+    image: app:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      - static:/app/static
+      - media:/app/media
+
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - nginx_conf:/etc/nginx/
+      - static:/var/www/django/static:ro
+      - media:/var/www/django/media:ro
+    depends_on:
+      - web
+    ports:
+      - 80:80
+
+
